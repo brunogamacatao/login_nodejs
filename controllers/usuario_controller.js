@@ -41,6 +41,7 @@ router.get('/:id', findPorId, async (req, res) => {
 router.post('/', async (req, res) => {
   const dados = req.body;
   dados.senha = await Seguranca.encripta(dados.senha);
+  dados.roles = ['user'];
 
   try {
     const novo = await new Usuario(dados).save();
@@ -51,12 +52,12 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.delete('/:id', findPorId, async (req, res) => {
+router.delete('/:id', Seguranca.isAutenticado, isMeuUsuario, findPorId, async (req, res) => {
   await req.usuario.remove();
   res.json({status: 'ok', mensagem: 'Usuário removido com sucesso'});
 });
 
-router.put('/:id', findPorId, async (req, res) => {
+router.put('/:id', Seguranca.isAutenticado, isMeuUsuario, findPorId, async (req, res) => {
   await req.usuario.set(req.body).save();
 });
 
@@ -75,6 +76,20 @@ async function findPorId(req, res, next) {
   }
 
   next();
+};
+
+function isMeuUsuario(req, res, next) {
+  // Se o usuário for admin, ele pode tudo
+  if (req.usuario.roles.includes('admin')) {
+    next();
+  } else if (req.usuario.id === req.params.id) {
+    // Checando se o usuário do token é o mesmo usuário passado como parâmetro
+    next();
+  } else {
+    return res.status(404).json({ 
+      message: 'Você não é autorizado a alterar esse usuário'
+    });    
+  }
 };
 
 module.exports = router;

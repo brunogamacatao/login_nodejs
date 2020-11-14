@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/usuario');
 
-const VALIDADE_TOKEN = 300; // 5 minutos (300 segundos)
+const VALIDADE_TOKEN = parseInt(process.env.VALIDADE_TOKEN);
 const BCRYPT_SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS);
 
 const encripta = async (texto) => {

@@ -5,17 +5,17 @@ mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true });
 
 const db = mongoose.connection;
 
-const conectar = (params => {
-  const {onError, onOpen} = params || {};
-
-  db.on('error', (error) => {
-    onError ? onError(error) : console.error(error);
+const conectar = () => {
+  return new Promise((resolve, reject) => {
+    db.on('error', (error) => {
+      reject(error);
+    });
+  
+    db.once('open', () => {
+      resolve();
+    });  
   });
-
-  db.once('open', () => {
-    onOpen ? onOpen() : console.log('Conectado ao banco de dados !');
-  });
-});
+};
 
 module.exports = {
   conectar
